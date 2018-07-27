@@ -49,7 +49,10 @@ class Sale(Resource):
         try:
             userdata = self.load(request)
 
-            # REMOVE
+            if mongo.db.sale.find_one({'uuid':userdata['uuid']}):
+                raise ValidationError('sale exists', fields=['uuid'])
+
+            # uncomment to create sales for testing
             # userdata['uuid'] = uuid1()
 
             mongo.db.sale.insert_one(self.dump(userdata))

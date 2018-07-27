@@ -1,3 +1,5 @@
+from math import ceil
+
 from flask import request
 from flask_restful import Resource
 from marshmallow import ValidationError
@@ -74,9 +76,20 @@ class UserList(Resource):
     def get(self):
         users = []
         try:
-            data = mongo.db.users.find({"_id": 0})
+            data = mongo.db.user.find({}, {'_id': False})
             for user in data:
-                sales.append(user)
+                total = 0
+                amount = 0
+
+                usersales = mongo.db.sale.find({"user_email": user['email']}, {"_id": 0})
+                for usersale in usersales:
+                    total += 1
+                    amount += usersale['amount']
+
+                user["total"] = total
+                user["ammount"] = ceil(amount*100)/100
+
+                users.append(user)
 
         except ValidationError as e:
             return {'errors': e.messages}, 400
