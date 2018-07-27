@@ -1,0 +1,41 @@
+# Ejercicio Python
+
+Se requiere desarrollar un microservicio que exponga API RESTful utilizando algún framework de
+Python (preferentemente Flask) que permita lo siguiente:
+
+1. Crear usuarios, indicando email (debe ser válido), nombre, apellido y dirección (opcional).
+2. Aprobar un usuario anteriormente creado mediante su email.
+3. Modificar un usuario indicando su email y los campos a modificar.
+4. Deshabilitar un usuario indicando su email (nunca se eliminan, pero pueden deshabilitarse)
+5. Crear una venta asociada a un usuario, mediante una llamada tipo POST con el siguiente mensaje (si
+un usuario no se encuentra habilitado, este llamado debe dar error):
+
+```
+{
+“uuid”: “889e068d-b098-4da2-82dd-4c712a0446b6”,
+“user_email”: “ejemplo@geopagos.com”,
+“amount”: 123.45,
+“date”: “2017-10-15 11:35”
+}
+```
+
+6. Anular una venta indicando su identificador único (la venta queda, pero anulada).
+
+7. Listar todos los usuarios, indicando su email, nombre, apellido, dirección, estado (si fue aprobado y/o
+deshabilitado), la cantidad total de ventas asociadas a dicho usuario y el importe total operado (suma de
+los importes de todas las ventas no anuladas).
+
+8. Consultar la lista de ventas de un usuario indicando su email.
+Esta API será consumida por otros microservicios dentro del mismo stack, por lo que los pedidos que
+reciba deben ser sin autenticación.
+
+Implementar todas las validaciones que sea posible, retornando un error con su descripción
+correspondiente en caso de algún fallo o alguna inconsistencia en la información recibida.
+La información (usuarios y ventas) debe persistir en una base de datos, que puede ser documental
+(preferentemente) o relacional.
+
+Opcionalmente (siendo un plus que sumará puntos en la evaluación) se podrá incluir un archivo
+Dockerfile, que permita hacer un build de una imagen de Docker que contenga un interprete de Python,
+las dependencias necesarias, y el código del ejercicio. De igual modo se valorará la inclusión de un
+archivo docker-compose.yml que permita correr en un mismo stack el servicio mencionado y la base de
+datos. El servicio deberá poder ser accesible mediante el puerto 5000 del equipo anfitrión.
