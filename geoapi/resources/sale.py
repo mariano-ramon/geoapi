@@ -1,8 +1,10 @@
+import bson
 from datetime import datetime
-from json import dumps
+from decimal import Decimal
+from json import dumps, loads
 from uuid import uuid1
 
-from flask import request
+from flask import request, jsonify
 from flask_restful import Resource
 from marshmallow import ValidationError
 
@@ -34,7 +36,7 @@ class Sale(Resource):
             if ['amount','uuid','date'] in userdata:
                 raise ValidationError('sales can only be enabled/disabled')
 
-            mongo.db.sa;e.update_one({"uuid": userdata['uuid']}, 
+            mongo.db.sale.update_one({"uuid": userdata['uuid']}, 
                                      {"$set": self.dump(userdata)})
 
         except ValidationError as e:
@@ -47,29 +49,21 @@ class Sale(Resource):
         try:
             userdata = self.load(request)
 
-            if 'uuid' in userdata:
-                raise ValidationError("uuid can't be manually set")
+            # REMOVE
+            # userdata['uuid'] = uuid1()
 
-            userdata['uuid'] = uuid1()
-
-            sale = mongo.db.sale.insert_one(self.dump(userdata))
+            mongo.db.sale.insert_one(self.dump(userdata))
         except ValidationError as e:
             return {'errors': e.messages}, 400
 
-        return self.dump(sale)
+        return self.dump(userdata)
 
 
     @staticmethod
     def load(request):
         Sale = SaleSchema()
         userdata = request.json
-        if not 'amount' in userdata or userdata['amount'] == '':
-            raise ValidationError('amount cannot be empty')
-        if 'date' in userdata:
-            raise ValidationError("date can't be manually set")
-
-
-        return Sale.load(request.json)
+        return Sale.load(userdata)
 
 
     @staticmethod
@@ -79,12 +73,20 @@ class Sale(Resource):
 
 
 class UserSales(Resource):
-    def get(self, todo_id):
-        return 
+    
+    def get(self, email):
+        sales = []
+        try:
+            data = mongo.db.sale.find({"user_email": email}, {"_id": 0})
+            for sale in data:
+                sales.append(sale)
 
-    def put(self, todo_id):
-        todos[todo_id] = request.form['data']
-        return {todo_id: todos[todo_id]}
+        except ValidationError as e:
+            return {'errors': e.messages}, 400
+
+        return sales
+
+
 
 
 api.add_resource(Sale, '/sale/<uuid>', '/sale')

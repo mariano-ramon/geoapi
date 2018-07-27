@@ -41,36 +41,48 @@ class User(Resource):
             if mongo.db.user.find_one({'email':userdata['email']}):
                 raise ValidationError('mail already used', fields=['email'])
 
+            if any(x not in userdata for x in ['name','last_name']):
+                raise ValidationError('both name and last name are required')
+
             user = mongo.db.user.insert_one(self.dump(userdata))
 
 
         except ValidationError as e:
             return {'errors': e.messages}, 400
 
-        return self.dump(user)
+        return self.dump(userdata)
 
 
     @staticmethod
     def load(request):
         User = UserSchema()
-        userdata = request.json
-        if 'name' in userdata and userdata['name'] == '':
+        data = request.json
+        if 'name' in data and data['name'] == '':
             raise ValidationError('name cannot be empty')
-        if 'last_name' in userdata and userdata['last_name'] == '':
+        if 'last_name' in data and data['last_name'] == '':
             raise ValidationError('last name cannot be empty')
         return User.load(request.json)
 
 
     @staticmethod
-    def dump(user):
+    def dump(data):
         User = UserSchema()
-        return User.dump(user)
+        return User.dump(data)
 
 
 class UserList(Resource):
     def get(self):
+        users = []
+        try:
+            data = mongo.db.users.find({"_id": 0})
+            for user in data:
+                sales.append(user)
+
+        except ValidationError as e:
+            return {'errors': e.messages}, 400
+
         return users
 
 
 api.add_resource(User, '/user/<email>', '/user')
-api.add_resource(UserList, '/users/')
+api.add_resource(UserList, '/users')

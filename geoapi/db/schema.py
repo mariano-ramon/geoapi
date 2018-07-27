@@ -1,7 +1,9 @@
 from marshmallow import Schema, ValidationError
-from marshmallow.fields import Str, Decimal, DateTime, Email, Boolean, Nested, Float
+from marshmallow.fields import Str, Decimal, DateTime, Email, Boolean, Nested, Float, String
 
 from geoapi.db import mongo
+
+
 
 def is_enabled(email):
     user = mongo.db.user.find_one({"email": email})
@@ -11,10 +13,11 @@ def is_enabled(email):
 
 
 class SaleSchema(Schema):
+    _id = String()
     uuid = Str()
-    email = Email(validate=is_enabled, required=True)
-    amount = Float()
-    date = DateTime()
+    user_email = Email(validate=is_enabled, required=True)
+    amount = Float() #TODO change to Decimal(2)
+    date = DateTime(format="%Y-%m-%d %H:%M")
     enabled = Boolean()
 
 class UserSchema(Schema):
@@ -23,7 +26,7 @@ class UserSchema(Schema):
     last_name = Str()
     address = Str()
     enabled = Boolean()
-    #sales = Nested(SaleSchema, many=True)
+    sales = Nested(SaleSchema, many=True)
     # class Meta:
     #     fields = ("email", "name", "last_name")
 
